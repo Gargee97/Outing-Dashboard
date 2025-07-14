@@ -36,11 +36,13 @@
     <select id="foodPref">
       <option value="Veg">Veg</option>
       <option value="Non-Veg">Non-Veg</option>
+      <option value="N/A">N/A</option>
     </select>
     <label>Return Preference:</label>
     <select id="returnPref">
       <option value="Same Day">Same Day</option>
       <option value="Overnight">Overnight</option>
+      <option value="N/A">N/A</option>
     </select>
     <button type="submit">Save Profile</button>
   </form>
@@ -73,7 +75,7 @@
       <tr>
         <th>Owner</th>
         <th>Trigram</th>
-        <th>Phone</th>
+        <th>Mobile Number</th>
         <th>Route</th>
         <th>Total Seats</th>
         <th>Remaining Seats</th>
@@ -90,7 +92,7 @@
     <input type="text" id="requestName" required>
     <label>Group Name (Mention the group from the above list you wish to join for carpool):</label>
     <input type="text" id="requestGroup" required>
-    <b>Kindly connect with the group owner on their mobile number or on their trigram through platform conversations before joining their group</b>
+    <b>Kindly connect with the group owner on their Mobile Number or on their TRIGRAM through platform conversations before joining their group</b>
     <button type="submit">Request to Join</button>
   </form>
 
@@ -155,29 +157,4 @@
         const remainingSeats = group.seats - group.members.length;
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${group.owner}</td>
-          <td>${group.trigram}</td>
-          <td>${group.phone}</td>
-          <td>${group.route}</td>
-          <td>${group.seats}</td>
-          <td>${remainingSeats}</td>
-          <td>${group.returnType}</td>
-          <td>${group.members.join(', ')}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    document.getElementById('viewProfiles').addEventListener('click', function(e) {
-      e.preventDefault();
-      let html = '<h1>All Profiles</h1><table border="1" cellpadding="8" cellspacing="0"><tr><th>Name and Surname</th><th>Trigram</th><th>Attending on 22nd August</th><th>Food Preference</th><th>Return Preference</th></tr>';
-      profiles.forEach(profile => {
-        html += `<tr><td>${profile.name}</td><td>${profile.trigram}</td><td>${profile.attending}</td><td>${profile.foodPref}</td><td>${profile.returnPref}</td></tr>`;
-      });
-      html += '</table><br><a href="index.html">← Back to Dashboard</a>';
-      document.body.innerHTML = html;
-    });
-  </script>
-
-</body>
-</html>
+          <td>${grou
