@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Office Outing Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h2 { color: #2c3e50; }
+    form { margin-bottom: 30px; border: 1px solid #ccc; padding: 15px; border-radius: 5px; }
+    label { display: block; margin-top: 10px; }
+    input, select, button { padding: 8px; margin-top: 5px; width: 100%; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; }
+    th { background-color: #f4f4f4; }
+  </style>
+</head>
+<body>
+
+  <h1>🎉 Office Outing Dashboard</h1>
+
+  <h2>Create Your Profile</h2>
+  <form id="profileForm">
+    <label>Name:</label>
+    <input type="text" id="profileName" required>
+    <label>Food Preference:</label>
+    <select id="foodPref">
+      <option value="Veg">Veg</option>
+      <option value="Non-Veg">Non-Veg</option>
+    </select>
+    <label>Return Preference:</label>
+    <select id="returnPref">
+      <option value="Same Day">Same Day</option>
+      <option value="Overnight">Overnight</option>
+    </select>
+    <button type="submit">Save Profile</button>
+  </form>
+
+  <h2>Create Carpool Group</h2>
+  <form id="groupForm">
+    <label>Group Name (Owner):</label>
+    <input type="text" id="groupName" required>
+    <label>Route:</label>
+    <input type="text" id="route" required>
+    <label>Seats Available:</label>
+    <input type="number" id="seats" required>
+    <label>Return Type:</label>
+    <select id="groupReturnType">
+      <option value="Same Day">Same Day</option>
+      <option value="Overnight">Overnight</option>
+    </select>
+    <button type="submit">Create Group</button>
+  </form>
+
+  <h2>Available Carpool Groups</h2>
+  <table id="groupsTable">
+    <thead>
+      <tr>
+        <th>Owner</th>
+        <th>Route</th>
+        <th>Seats</th>
+        <th>Return Type</th>
+        <th>Members</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Request to Join a Group</h2>
+  <form id="requestForm">
+    <label>Your Name:</label>
+    <input type="text" id="requestName" required>
+    <label>Group Name:</label>
+    <input type="text" id="requestGroup" required>
+    <button type="submit">Request to Join</button>
+  </form>
+
+  <script>
+    const groups = [];
+
+    document.getElementById('groupForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const owner = document.getElementById('groupName').value;
+      const route = document.getElementById('route').value;
+      const seats = document.getElementById('seats').value;
+      const returnType = document.getElementById('groupReturnType').value;
+      const members = [owner];
+
+      groups.push({ owner, route, seats, returnType, members });
+      updateGroupsTable();
+
+      this.reset();
+    });
+
+    document.getElementById('requestForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const requestName = document.getElementById('requestName').value;
+      const requestGroup = document.getElementById('requestGroup').value;
+
+      const group = groups.find(g => g.owner === requestGroup);
+      if (group) {
+        if (group.members.length < group.seats) {
+          group.members.push(requestName);
+          alert(`${requestName} successfully joined ${requestGroup}'s group!`);
+        } else {
+          alert('Sorry! No seats available in this group.');
+        }
+      } else {
+        alert('Group not found!');
+      }
+
+      updateGroupsTable();
+      this.reset();
+    });
+
+    function updateGroupsTable() {
+      const tbody = document.querySelector('#groupsTable tbody');
+      tbody.innerHTML = '';
+      groups.forEach(group => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${group.owner}</td>
+          <td>${group.route}</td>
+          <td>${group.seats}</td>
+          <td>${group.returnType}</td>
+          <td>${group.members.join(', ')}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      alert('Profile saved! (In this simple version, profile is not stored permanently.)');
+      this.reset();
+    });
+  </script>
+
+</body>
+</html>
