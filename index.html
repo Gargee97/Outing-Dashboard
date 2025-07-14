@@ -12,6 +12,7 @@
     th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
     th { background-color: #f4f4f4; }
     .link-button { margin-bottom: 20px; display: inline-block; padding: 10px 15px; background-color: #2c3e50; color: white; text-decoration: none; border-radius: 5px; }
+    b { display: block; margin-top: 5px; }
   </style>
 </head>
 <body>
@@ -22,8 +23,15 @@
 
   <h2>Create Your Profile</h2>
   <form id="profileForm">
-    <label>Name:</label>
+    <label>Name and Surname:</label>
     <input type="text" id="profileName" required>
+    <label>Trigram:</label>
+    <input type="text" id="profileTrigram" required>
+    <label>Will you be attending the office outing on 22nd August?</label>
+    <select id="profileAttending" required>
+      <option value="Yes">Yes</option>
+      <option value="No">No</option>
+    </select>
     <label>Food Preference:</label>
     <select id="foodPref">
       <option value="Veg">Veg</option>
@@ -41,6 +49,10 @@
   <form id="groupForm">
     <label>Group Name (Owner):</label>
     <input type="text" id="groupName" required>
+    <label>Trigram:</label>
+    <input type="text" id="groupTrigram" required>
+    <label>Phone Number:</label>
+    <input type="text" id="groupPhone" required>
     <label>Route From:</label>
     <input type="text" id="routeFrom" required>
     <label>Route To:</label>
@@ -60,6 +72,8 @@
     <thead>
       <tr>
         <th>Owner</th>
+        <th>Trigram</th>
+        <th>Phone</th>
         <th>Route</th>
         <th>Total Seats</th>
         <th>Remaining Seats</th>
@@ -76,6 +90,7 @@
     <input type="text" id="requestName" required>
     <label>Group Name (Mention the group from the above list you wish to join for carpool):</label>
     <input type="text" id="requestGroup" required>
+    <b>Kindly connect with the group owner on their mobile number or on their trigram through platform conversations before joining their group</b>
     <button type="submit">Request to Join</button>
   </form>
 
@@ -86,10 +101,12 @@
     document.getElementById('profileForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const name = document.getElementById('profileName').value;
+      const trigram = document.getElementById('profileTrigram').value;
+      const attending = document.getElementById('profileAttending').value;
       const foodPref = document.getElementById('foodPref').value;
       const returnPref = document.getElementById('returnPref').value;
 
-      profiles.push({ name, foodPref, returnPref });
+      profiles.push({ name, trigram, attending, foodPref, returnPref });
       alert('Profile saved successfully!');
       this.reset();
     });
@@ -97,6 +114,8 @@
     document.getElementById('groupForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const owner = document.getElementById('groupName').value;
+      const trigram = document.getElementById('groupTrigram').value;
+      const phone = document.getElementById('groupPhone').value;
       const from = document.getElementById('routeFrom').value;
       const to = document.getElementById('routeTo').value;
       const route = `${from} → ${to}`;
@@ -104,7 +123,7 @@
       const returnType = document.getElementById('groupReturnType').value;
       const members = [owner];
 
-      groups.push({ owner, route, seats, returnType, members });
+      groups.push({ owner, trigram, phone, route, seats, returnType, members });
       updateGroupsTable();
       this.reset();
     });
@@ -137,6 +156,8 @@
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${group.owner}</td>
+          <td>${group.trigram}</td>
+          <td>${group.phone}</td>
           <td>${group.route}</td>
           <td>${group.seats}</td>
           <td>${remainingSeats}</td>
@@ -149,9 +170,9 @@
 
     document.getElementById('viewProfiles').addEventListener('click', function(e) {
       e.preventDefault();
-      let html = '<h1>All Profiles</h1><table border="1" cellpadding="8" cellspacing="0"><tr><th>Name</th><th>Food Preference</th><th>Return Preference</th></tr>';
+      let html = '<h1>All Profiles</h1><table border="1" cellpadding="8" cellspacing="0"><tr><th>Name and Surname</th><th>Trigram</th><th>Attending on 22nd August</th><th>Food Preference</th><th>Return Preference</th></tr>';
       profiles.forEach(profile => {
-        html += `<tr><td>${profile.name}</td><td>${profile.foodPref}</td><td>${profile.returnPref}</td></tr>`;
+        html += `<tr><td>${profile.name}</td><td>${profile.trigram}</td><td>${profile.attending}</td><td>${profile.foodPref}</td><td>${profile.returnPref}</td></tr>`;
       });
       html += '</table><br><a href="index.html">← Back to Dashboard</a>';
       document.body.innerHTML = html;
