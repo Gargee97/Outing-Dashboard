@@ -9,11 +9,14 @@
     label { display: block; margin-top: 10px; }
     input, select, button { padding: 8px; margin-top: 5px; width: 100%; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ddd; padding: 8px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
     th { background-color: #f4f4f4; }
+    .link-button { margin-bottom: 20px; display: inline-block; padding: 10px 15px; background-color: #2c3e50; color: white; text-decoration: none; border-radius: 5px; }
   </style>
 </head>
 <body>
+
+  <a href="#" id="viewProfiles" class="link-button">View All Profiles</a>
 
   <h1>🎉 Office Outing Dashboard</h1>
 
@@ -38,8 +41,10 @@
   <form id="groupForm">
     <label>Group Name (Owner):</label>
     <input type="text" id="groupName" required>
-    <label>Route:</label>
-    <input type="text" id="route" required>
+    <label>Route From:</label>
+    <input type="text" id="routeFrom" required>
+    <label>Route To:</label>
+    <input type="text" id="routeTo" required>
     <label>Seats Available:</label>
     <input type="number" id="seats" required>
     <label>Return Type:</label>
@@ -56,7 +61,8 @@
       <tr>
         <th>Owner</th>
         <th>Route</th>
-        <th>Seats</th>
+        <th>Total Seats</th>
+        <th>Remaining Seats</th>
         <th>Return Type</th>
         <th>Members</th>
       </tr>
@@ -68,25 +74,38 @@
   <form id="requestForm">
     <label>Your Name:</label>
     <input type="text" id="requestName" required>
-    <label>Group Name:</label>
+    <label>Group Name (Mention the group from the above list you wish to join for carpool):</label>
     <input type="text" id="requestGroup" required>
     <button type="submit">Request to Join</button>
   </form>
 
   <script>
     const groups = [];
+    const profiles = [];
+
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = document.getElementById('profileName').value;
+      const foodPref = document.getElementById('foodPref').value;
+      const returnPref = document.getElementById('returnPref').value;
+
+      profiles.push({ name, foodPref, returnPref });
+      alert('Profile saved successfully!');
+      this.reset();
+    });
 
     document.getElementById('groupForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const owner = document.getElementById('groupName').value;
-      const route = document.getElementById('route').value;
-      const seats = document.getElementById('seats').value;
+      const from = document.getElementById('routeFrom').value;
+      const to = document.getElementById('routeTo').value;
+      const route = `${from} → ${to}`;
+      const seats = parseInt(document.getElementById('seats').value);
       const returnType = document.getElementById('groupReturnType').value;
       const members = [owner];
 
       groups.push({ owner, route, seats, returnType, members });
       updateGroupsTable();
-
       this.reset();
     });
 
@@ -106,7 +125,6 @@
       } else {
         alert('Group not found!');
       }
-
       updateGroupsTable();
       this.reset();
     });
@@ -115,11 +133,13 @@
       const tbody = document.querySelector('#groupsTable tbody');
       tbody.innerHTML = '';
       groups.forEach(group => {
+        const remainingSeats = group.seats - group.members.length;
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${group.owner}</td>
           <td>${group.route}</td>
           <td>${group.seats}</td>
+          <td>${remainingSeats}</td>
           <td>${group.returnType}</td>
           <td>${group.members.join(', ')}</td>
         `;
@@ -127,10 +147,14 @@
       });
     }
 
-    document.getElementById('profileForm').addEventListener('submit', function(e) {
+    document.getElementById('viewProfiles').addEventListener('click', function(e) {
       e.preventDefault();
-      alert('Profile saved! (In this simple version, profile is not stored permanently.)');
-      this.reset();
+      let html = '<h1>All Profiles</h1><table border="1" cellpadding="8" cellspacing="0"><tr><th>Name</th><th>Food Preference</th><th>Return Preference</th></tr>';
+      profiles.forEach(profile => {
+        html += `<tr><td>${profile.name}</td><td>${profile.foodPref}</td><td>${profile.returnPref}</td></tr>`;
+      });
+      html += '</table><br><a href="index.html">← Back to Dashboard</a>';
+      document.body.innerHTML = html;
     });
   </script>
 
