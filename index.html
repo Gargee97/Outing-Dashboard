@@ -1,86 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8" />
   <title>Office Outing Dashboard</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
-    h2 { color: #2c3e50; }
-    form { margin-bottom: 30px; border: 1px solid #ccc; padding: 15px; border-radius: 5px; }
-    label { display: block; margin-top: 10px; }
-    input, select, button { padding: 8px; margin-top: 5px; width: 50%; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-    th { background-color: #f4f4f4; }
-    .link-button { margin-bottom: 20px; display: inline-block; padding: 10px 15px; background-color: #2c3e50; color: white; text-decoration: none; border-radius: 5px; }
-    b { display: block; margin-top: 5px; }
-    p { margin-top: -10px; }
+    h1 { margin-bottom: 6px; }
+    p.desc { color: #333; margin-top: 0; }
+    form { margin-bottom: 20px; border: 1px solid #ddd; padding: 12px; border-radius: 6px; max-width: 720px; }
+    label { display: block; margin-top: 10px; font-weight: 600; }
+    input, select, textarea, button { padding: 8px; margin-top: 6px; width: 100%; box-sizing: border-box; }
+    table { width: 100%; max-width: 1100px; border-collapse: collapse; margin-top: 12px; }
+    th, td { border: 1px solid #eee; padding: 8px; text-align: left; }
+    th { background: #f7f7f7; }
+    .muted { color: #666; font-size: 0.95em; margin-top: 6px; }
+    .note { font-weight: 700; margin-top: 8px; }
   </style>
 </head>
 <body>
 
-  <a href="#" id="viewProfiles" class="link-button">View All Profiles</a>
-
   <h1>🎉 Office Outing Dashboard</h1>
-  <p>
+  <p class="desc">
     Hey everyone! We’ll be visiting <b>Nature Trails Resort</b> for our office outing. 
-    You can check out more details on their 
-    <a href="https://www.naturetrails.in/" target="_blank">website</a> or view the 
+    You can check out more details on their <a href="https://www.naturetrails.in/" target="_blank">website</a> or view the 
     <a href="https://maps.app.goo.gl/4D3tUzZerDj7rniG6" target="_blank">Google Map location here</a>.
   </p>
 
-  <h2>Create Your Profile</h2>
-  <form id="profileForm">
-    <label>Name and Surname:</label>
-    <input type="text" id="profileName" required>
-    <label>Trigram:</label>
-    <input type="text" id="profileTrigram" required>
-    <label>Will you be attending the office outing on 22nd August?</label>
-    <select id="profileAttending" required>
-      <option value="Yes">Yes</option>
-      <option value="No">No</option>
-    </select>
-    <label>Food Preference:</label>
-    <select id="foodPref">
-      <option value="Veg">Veg</option>
-      <option value="Non-Veg">Non-Veg</option>
-      <option value="N/A">N/A</option>
-    </select>
-    <label>Return Preference:</label>
-    <select id="returnPref">
-      <option value="Same Day">Same Day</option>
-      <option value="Overnight">Overnight</option>
-      <option value="N/A">N/A</option>
-    </select>
-    <button type="submit">Save Profile</button>
-  </form>
-
-  <h2>Create Carpool Group</h2>
+  <h2>Create Car Pool Group</h2>
   <form id="groupForm">
-    <label>Group Name (Owner):</label>
-    <input type="text" id="groupName" required>
+    <label>Group Name (Car Owner's Name):</label>
+    <input id="group_owner" required placeholder="e.g., John's Car">
     <label>Trigram:</label>
-    <input type="text" id="groupTrigram" required>
+    <input id="group_trigram" required placeholder="e.g., JDN">
     <label>Phone Number:</label>
-    <input type="text" id="groupPhone" required>
+    <input id="group_phone" required placeholder="Owner mobile number">
     <label>Route From:</label>
-    <input type="text" id="routeFrom" required>
+    <input id="route_from" required>
     <label>Route To:</label>
-    <input type="text" id="routeTo" required>
-    <label>Seats Available:</label>
-    <input type="number" id="seats" required>
+    <input id="route_to" required>
+    <label>Total Seats Available:</label>
+    <input id="total_seats" type="number" min="1" value="1" required>
     <label>Return Type:</label>
-    <select id="groupReturnType">
-      <option value="Same Day">Same Day</option>
-      <option value="Overnight">Overnight</option>
+    <select id="group_return">
+      <option>Same Day</option>
+      <option>Overnight</option>
     </select>
-    <button type="submit">Create Group</button>
+    <div style="margin-top:10px">
+      <button type="submit">Create Group</button>
+    </div>
   </form>
 
   <h2>Available Carpool Groups</h2>
   <table id="groupsTable">
     <thead>
       <tr>
-        <th>Owner</th>
+        <th>Group Name (Car Owner's Name)</th>
         <th>Trigram</th>
         <th>Phone</th>
         <th>Route</th>
@@ -93,114 +67,126 @@
     <tbody></tbody>
   </table>
 
-  <h2>Request to Join a Group</h2>
-  <form id="requestForm">
+  <h2>Request to Join a Car Pool Group</h2>
+  <form id="joinForm">
     <label>Your Name:</label>
-    <input type="text" id="requestName" required>
-    <label>Group Name (Mention the group from the above list you wish to join for carpool):</label>
-    <input type="text" id="requestGroup" required>
-    <b>Kindly connect with the group owner on their mobile number or on their trigram through platform conversations before joining their group</b>
-    <button type="submit">Request to Join</button>
+    <input id="join_name" required>
+    <label>Group Name (Mention the Car Owner's name from the above list you wish to join for carpool):</label>
+    <input id="join_group" required placeholder="Type exact group name (Car Owner's Name)">
+    <label>Message (optional):</label>
+    <textarea id="join_msg" rows="2" placeholder="Any message to the owner"></textarea>
+    <div class="note">Kindly connect with the group owner on their mobile number or on their trigram through platform conversations before joining their group</div>
+    <div style="margin-top:10px"><button type="submit">Request to Join</button></div>
   </form>
 
   <script>
-    const groups = [];
-    const profiles = [];
+    // REPLACE with your Apps Script web app URL
+    const API_ROOT = "https://script.google.com/macros/s/AKfycbzkH_nmSwCt2LtMKlfgCmOxQeST8Lc7N4RKOH9lAQMazrZaknkGky-T49PZVWb4MGD3/exec"; // e.g. https://script.google.com/macros/s/AKf.../exec
 
-    document.getElementById('profileForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const name = document.getElementById('profileName').value;
-      const trigram = document.getElementById('profileTrigram').value;
-      const attending = document.getElementById('profileAttending').value;
-      const foodPref = document.getElementById('foodPref').value;
-      const returnPref = document.getElementById('returnPref').value;
-
-      profiles.push({ name, trigram, attending, foodPref, returnPref });
-      alert('Profile saved successfully!');
-      this.reset();
-    });
-
-    document.getElementById('groupForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const owner = document.getElementById('groupName').value;
-      const trigram = document.getElementById('groupTrigram').value;
-      const phone = document.getElementById('groupPhone').value;
-      const from = document.getElementById('routeFrom').value;
-      const to = document.getElementById('routeTo').value;
-      const route = `${from} → ${to}`;
-      const seats = parseInt(document.getElementById('seats').value);
-      const returnType = document.getElementById('groupReturnType').value;
-      const members = [owner];
-
-      groups.push({ owner, trigram, phone, route, seats, returnType, members });
-      updateGroupsTable();
-      this.reset();
-    });
-
-    document.getElementById('requestForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const requestName = document.getElementById('requestName').value;
-      const requestGroup = document.getElementById('requestGroup').value;
-
-      const group = groups.find(g => g.owner === requestGroup);
-      if (group) {
-        if (group.members.length < group.seats) {
-          group.members.push(requestName);
-          alert(`${requestName} successfully joined ${requestGroup}'s group!`);
-        } else {
-          alert('Sorry! No seats available in this group.');
-        }
-      } else {
-        alert('Group not found!');
+    // helper: fetch groups and populate table
+    async function loadGroups() {
+      try {
+        const res = await fetch(API_ROOT + "?action=getGroups");
+        const data = await res.json(); // data is array of rows including header
+        // data[0] is header row from sheet
+        const rows = data.slice(1); // actual data
+        const tbody = document.querySelector("#groupsTable tbody");
+        tbody.innerHTML = "";
+        rows.forEach(r => {
+          // r indices (based on CarPoolGroups headers):
+          // 0: GroupName,1:Trigram,2:Phone,3:From,4:To,5:TotalSeats,6:RemainingSeats,7:ReturnType,8:Members
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${escapeHtml(r[0]||"")}</td>
+            <td>${escapeHtml(r[1]||"")}</td>
+            <td>${escapeHtml(r[2]||"")}</td>
+            <td>${escapeHtml((r[3]||"") + " → " + (r[4]||""))}</td>
+            <td>${r[5]||""}</td>
+            <td>${r[6]||""}</td>
+            <td>${escapeHtml(r[7]||"")}</td>
+            <td>${escapeHtml(r[8]||"")}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error(err);
+        alert("Failed to load groups. Check console for details.");
       }
-      updateGroupsTable();
-      this.reset();
-    });
-
-    function updateGroupsTable() {
-      const tbody = document.querySelector('#groupsTable tbody');
-      tbody.innerHTML = '';
-      groups.forEach(group => {
-        const remainingSeats = group.seats - group.members.length;
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${group.owner}</td>
-          <td>${group.trigram}</td>
-          <td>${group.phone}</td>
-          <td>${group.route}</td>
-          <td>${group.seats}</td>
-          <td>${remainingSeats}</td>
-          <td>${group.returnType}</td>
-          <td>${group.members.join(', ')}</td>
-        `;
-        tbody.appendChild(tr);
-      });
     }
 
-    document.getElementById('viewProfiles').addEventListener('click', function(e) {
+    // utility to escape HTML
+    function escapeHtml(s) {
+      if (!s) return "";
+      return String(s).replace(/[&<>"']/g, function(m) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];});
+    }
+
+    // create group submit
+    document.getElementById("groupForm").addEventListener("submit", async function(e) {
       e.preventDefault();
-      let html = '<h1>All Profiles</h1><table border="1" cellpadding="8" cellspacing="0"><tr><th>Name and Surname</th><th>Trigram</th><th>Attending on 22nd August</th><th>Food Preference</th><th>Return Preference</th></tr>';
-      profiles.forEach(profile => {
-        html += `<tr><td>${profile.name}</td><td>${profile.trigram}</td><td>${profile.attending}</td><td>${profile.foodPref}</td><td>${profile.returnPref}</td></tr>`;
-      });
-      html += '</table><br><button onclick="downloadProfiles()">Download as Excel</button><br><br><a href="index.html">← Back to Dashboard</a>';
-      document.body.innerHTML = html;
+      const payload = {
+        type: "group",
+        ownerName: document.getElementById("group_owner").value.trim(),
+        trigram: document.getElementById("group_trigram").value.trim(),
+        phone: document.getElementById("group_phone").value.trim(),
+        from: document.getElementById("route_from").value.trim(),
+        to: document.getElementById("route_to").value.trim(),
+        totalSeats: Number(document.getElementById("total_seats").value),
+        returnType: document.getElementById("group_return").value
+      };
+      try {
+        const res = await fetch(API_ROOT, {
+          method: "POST",
+          body: JSON.stringify(payload),
+          headers: { "Content-Type": "application/json" }
+        });
+        const data = await res.json();
+        if (data.status === "ok") {
+          alert("Group created.");
+          this.reset();
+          loadGroups();
+        } else {
+          alert("Error: " + (data.message||JSON.stringify(data)));
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Create failed. See console.");
+      }
     });
 
-    function downloadProfiles() {
-      let csvContent = "data:text/csv;charset=utf-8,";
-      csvContent += "Name and Surname,Trigram,Attending on 22nd August,Food Preference,Return Preference\n";
-      profiles.forEach(p => {
-        csvContent += `${p.name},${p.trigram},${p.attending},${p.foodPref},${p.returnPref}\n`;
-      });
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "profiles.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+    // join group submit
+    document.getElementById("joinForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const payload = {
+        type: "join",
+        requestName: document.getElementById("join_name").value.trim(),
+        targetGroup: document.getElementById("join_group").value.trim(),
+        message: document.getElementById("join_msg").value.trim()
+      };
+      try {
+        const res = await fetch(API_ROOT, {
+          method: "POST",
+          body: JSON.stringify(payload),
+          headers: { "Content-Type": "application/json" }
+        });
+        const data = await res.json();
+        if (data.status === "ok") {
+          alert("You were added to the group (if seats available).");
+          this.reset();
+          loadGroups();
+        } else {
+          alert("Error: " + (data.message||JSON.stringify(data)));
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Request failed. See console.");
+      }
+    });
+
+    // initial load
+    loadGroups();
+
+    // optionally poll every 20s for updates
+    setInterval(loadGroups, 20000);
   </script>
 
 </body>
