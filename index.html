@@ -1,124 +1,100 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Office Outing Dashboard</title>
-<style>
-body { font-family: Arial, sans-serif; margin: 20px; }
-input, select, button { margin: 5px; padding: 5px; }
-</style>
-</head>
-<body>
+// Apps Script (Google Sheets backend)
+const SS = SpreadsheetApp.getActiveSpreadsheet();
 
-<h1>Office Outing Dashboard</h1>
-<p>Hey everyone, we’ll be visiting <strong>Nature Trails Resort</strong>. 
-Check out their <a href="https://www.naturetrails.in/" target="_blank">website</a> 
-and <a href="https://maps.app.goo.gl/4D3tUzZerDj7rniG6" target="_blank">Google Map location</a>.</p>
-
-<h2>Create Carpool Group (For Car Owners)</h2>
-<input type="text" id="ownerName" placeholder="Car Owner's Name">
-<input type="text" id="from" placeholder="From">
-<input type="text" id="to" placeholder="To">
-<input type="text" id="trigram" placeholder="Trigram">
-<input type="text" id="phone" placeholder="Phone Number">
-<input type="number" id="seatsAvailable" placeholder="Seats Available">
-<button onclick="createGroup()">Create Car Pool Group</button>
-
-<h2>Request to Join a Car Pool Group</h2>
-<input type="text" id="requestorName" placeholder="Your Name">
-<input type="text" id="reqTrigram" placeholder="Your Trigram">
-<input type="text" id="reqPhone" placeholder="Your Phone Number">
-<input type="text" id="targetGroup" placeholder="Car Owner's Name to Join">
-<p><b>Kindly connect with the group owner on their mobile number or on their trigram through platform conversations before joining their group</b></p>
-<button onclick="joinGroup()">Request to Join</button>
-
-<h2>Available Carpool Groups</h2>
-<table border="1" id="groupTable">
-<thead>
-<tr>
-<th>Car Owner's Name</th><th>From</th><th>To</th><th>Trigram</th><th>Phone</th><th>Seats Available</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-
-<script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzkH_nmSwCt2LtMKlfgCmOxQeST8Lc7N4RKOH9lAQMazrZaknkGky-T49PZVWb4MGD3/exec";
-
-function createGroup() {
-  const payload = {
-    action: "createGroup",
-    ownerName: document.getElementById("ownerName").value,
-    from: document.getElementById("from").value,
-    to: document.getElementById("to").value,
-    trigram: document.getElementById("trigram").value,
-    phone: document.getElementById("phone").value,
-    seatsAvailable: document.getElementById("seatsAvailable").value
-  };
-
-  fetch(WEB_APP_URL, {
-    method: "POST",
-    body: JSON.stringify(payload)
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.status === "success") {
-      alert("Group created successfully!");
-      loadGroups();
-    } else {
-      alert("Error: " + data.message);
-    }
-  });
+function doGet(e) {
+  const action = e.parameter.action;
+  if (action === "getGroups") {
+    return getGroups();
+  } else if (action === "getRequests") {
+    return getRequests();
+  } else {
+    return ContentService.createTextOutput(JSON.stringify({error:"No action specified"})).setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
-function joinGroup() {
-  const payload = {
-    action: "joinGroup",
-    requestorName: document.getElementById("requestorName").value,
-    trigram: document.getElementById("reqTrigram").value,
-    phone: document.getElementById("reqPhone").value,
-    targetGroup: document.getElementById("targetGroup").value
-  };
-
-  fetch(WEB_APP_URL, {
-    method: "POST",
-    body: JSON.stringify(payload)
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.status === "success") {
-      alert("Join request sent!");
-    } else {
-      alert("Error: " + data.message);
-    }
-  });
+function doPost(e) {
+  // Expect JSON in body
+  const payload = JSON.parse(e.postData.contents);
+  if (payload.type === "group") {
+    return saveGroup(payload);
+  } else if (payload.type === "join") {
+    return joinGroup(payload);
+  } else {
+    return ContentService.createTextOutput(JSON.stringify({status:"error", message:"invalid type"})).setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
-function loadGroups() {
-  const payload = { action: "getGroups" };
-  fetch(WEB_APP_URL, {
-    method: "POST",
-    body: JSON.stringify(payload)
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.status === "success") {
-      const tbody = document.querySelector("#groupTable tbody");
-      tbody.innerHTML = "";
-      data.data.slice(1).forEach(row => {
-        let tr = document.createElement("tr");
-        row.forEach(cell => {
-          let td = document.createElement("td");
-          td.textContent = cell;
-          tr.appendChild(td);
-        });
-        tbody.appendChild(tr);
-      });
-    }
-  });
+/** Save group to CarPoolGroups sheet */
+function saveGroup(data) {
+  const sheet = SS.getSheetByName("CarPoolGroups");
+  if (!sheet) return ContentService.createTextOutput(JSON.stringify({status:"error", message:"CarPoolGroups sheet missing"})).setMimeType(ContentService.MimeType.JSON);
+  // Append row: GroupName, Trigram, Phone, From, To, TotalSeats, RemainingSeats, ReturnType, Members
+  const membersInit = data.ownerName; // owner is initial member
+  sheet.appendRow([data.ownerName, data.trigram || "", data.phone || "", data.from || "", data.to || "", Number(data.totalSeats) || 0, Number(data.totalSeats) || 0, data.returnType || "", membersInit]);
+  return ContentService.createTextOutput(JSON.stringify({status:"ok", message:"group saved"})).setMimeType(ContentService.MimeType.JSON);
 }
 
-loadGroups();
-</script>
+/** Join group: append to JoinRequests and update CarPoolGroups if seats available */
+function joinGroup(data) {
+  const reqSheet = SS.getSheetByName("JoinRequests");
+  const groupSheet = SS.getSheetByName("CarPoolGroups");
+  if (!reqSheet || !groupSheet) return ContentService.createTextOutput(JSON.stringify({status:"error", message:"Required sheet(s) missing"})).setMimeType(ContentService.MimeType.JSON);
 
-</body>
-</html>
+  // Append request record
+  const ts = new Date();
+  reqSheet.appendRow([ts, data.requestName, data.targetGroup, data.message || "", "Pending"]);
+
+  // Find group row
+  const range = groupSheet.getDataRange();
+  const values = range.getValues(); // 2D array
+  const headers = values[0];
+  let foundRow = -1;
+  for (let i = 1; i < values.length; i++) {
+    if (String(values[i][0]).trim() === String(data.targetGroup).trim()) {
+      foundRow = i + 1; // sheet rows are 1-indexed
+      break;
+    }
+  }
+  if (foundRow === -1) {
+    return ContentService.createTextOutput(JSON.stringify({status:"error", message:"Group not found"})).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // columns positions (1-indexed):
+  // 1: GroupName, 6: TotalSeats, 7: RemainingSeats, 9: Members
+  const remainingCol = 7;
+  const membersCol = 9;
+  const remaining = Number(groupSheet.getRange(foundRow, remainingCol).getValue());
+  if (remaining <= 0) {
+    // update request status to Rejected (optional)
+    const lastRow = reqSheet.getLastRow();
+    reqSheet.getRange(lastRow, 5).setValue("Rejected - No seats");
+    return ContentService.createTextOutput(JSON.stringify({status:"error", message:"No seats available"})).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // Auto-approve: add member to members list and decrement remaining seats
+  const currentMembers = String(groupSheet.getRange(foundRow, membersCol).getValue());
+  const updatedMembers = currentMembers ? currentMembers + ", " + data.requestName : data.requestName;
+  groupSheet.getRange(foundRow, membersCol).setValue(updatedMembers);
+  groupSheet.getRange(foundRow, remainingCol).setValue(remaining - 1);
+
+  // Update join request status to Approved
+  const lastRowId = reqSheet.getLastRow();
+  reqSheet.getRange(lastRowId, 5).setValue("Approved");
+
+  return ContentService.createTextOutput(JSON.stringify({status:"ok", message:"Joined and updated group"})).setMimeType(ContentService.MimeType.JSON);
+}
+
+/** Return groups as JSON (including header row) */
+function getGroups() {
+  const sheet = SS.getSheetByName("CarPoolGroups");
+  if (!sheet) return ContentService.createTextOutput(JSON.stringify({status:"error", message:"CarPoolGroups missing"})).setMimeType(ContentService.MimeType.JSON);
+  const values = sheet.getDataRange().getValues();
+  return ContentService.createTextOutput(JSON.stringify(values)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function getRequests() {
+  const sheet = SS.getSheetByName("JoinRequests");
+  if (!sheet) return ContentService.createTextOutput(JSON.stringify({status:"error", message:"JoinRequests missing"})).setMimeType(ContentService.MimeType.JSON);
+  const values = sheet.getDataRange().getValues();
+  return ContentService.createTextOutput(JSON.stringify(values)).setMimeType(ContentService.MimeType.JSON);
+}
