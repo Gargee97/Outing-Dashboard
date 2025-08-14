@@ -75,66 +75,61 @@
   </form>
 
   <script>
-    const groups = [];
+    const API_URL = "https://script.google.com/macros/s/AKfycbz-QZdj5xVkAe3dsH6JT2YMmFy8ChTbjclmPBdfTcGKrdyzYEeVuEm6rQ9rJTJaHVn3oA/exec";
 
-    document.getElementById('groupForm').addEventListener('submit', function(e) {
+    async function fetchGroups() {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      updateGroupsTable(data);
+    }
+
+    document.getElementById('groupForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const owner = document.getElementById('groupName').value;
-      const trigram = document.getElementById('groupTrigram').value;
-      const phone = document.getElementById('groupPhone').value;
-      const from = document.getElementById('routeFrom').value;
-      const to = document.getElementById('routeTo').value;
-      const route = `${from} → ${to}`;
-      const seats = parseInt(document.getElementById('seats').value);
-      const returnType = document.getElementById('groupReturnType').value;
-      const members = [owner];
+      const formData = {
+        "Group Name (Owner)": document.getElementById('groupName').value,
+        "Trigram": document.getElementById('groupTrigram').value,
+        "Phone Number": document.getElementById('groupPhone').value,
+        "Route From": document.getElementById('routeFrom').value,
+        "Route To": document.getElementById('routeTo').value,
+        "Route": `${document.getElementById('routeFrom').value} → ${document.getElementById('routeTo').value}`,
+        "Total Seats": parseInt(document.getElementById('seats').value),
+        "Remaining Seats": parseInt(document.getElementById('seats').value),
+        "Return Type": document.getElementById('groupReturnType').value,
+        "Members": document.getElementById('groupName').value
+      };
 
-      groups.push({ owner, trigram, phone, route, seats, returnType, members });
-      updateGroupsTable();
+      await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify(formData),
+        headers: { 'Content-Type': 'application/json' }
+      });
+
       this.reset();
+      fetchGroups();
     });
 
-    document.getElementById('requestForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const requestName = document.getElementById('requestName').value;
-      const requestGroup = document.getElementById('requestGroup').value;
-
-      const group = groups.find(g => g.owner === requestGroup);
-      if (group) {
-        if (group.members.length < group.seats) {
-          group.members.push(requestName);
-          alert(`${requestName} successfully joined ${requestGroup}'s group!`);
-        } else {
-          alert('Sorry! No seats available in this group.');
-        }
-      } else {
-        alert('Group not found!');
-      }
-      updateGroupsTable();
-      this.reset();
-    });
-
-    function updateGroupsTable() {
+    function updateGroupsTable(groups) {
       const tbody = document.querySelector('#groupsTable tbody');
       tbody.innerHTML = '';
       groups.forEach(group => {
-        const remainingSeats = group.seats - group.members.length;
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${group.owner}</td>
-          <td>${group.trigram}</td>
-          <td>${group.phone}</td>
-          <td>${group.route}</td>
-          <td>${group.seats}</td>
-          <td>${remainingSeats}</td>
-          <td>${group.returnType}</td>
-          <td>${group.members.join(', ')}</td>
+          <td>${group["Group Name (Owner)"]}</td>
+          <td>${group["Trigram"]}</td>
+          <td>${group["Phone Number"]}</td>
+          <td>${group["Route"]}</td>
+          <td>${group["Total Seats"]}</td>
+          <td>${group["Remaining Seats"]}</td>
+          <td>${group["Return Type"]}</td>
+          <td>${group["Members"]}</td>
         `;
         tbody.appendChild(tr);
       });
     }
+
+    // Load groups when the page loads
+    fetchGroups();
   </script>
 
 </body>
 </html>
-
