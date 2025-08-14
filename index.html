@@ -17,119 +17,142 @@
 </head>
 <body>
 
-  <h1>🎉 Office Outing Dashboard</h1>
-  <p>
-    Hey everyone! We’ll be visiting <b>Nature Trails Resort</b> for our office outing. 
-    You can check out more details on their 
-    <a href="https://www.naturetrails.in/" target="_blank">website</a> or view the 
-    <a href="https://maps.app.goo.gl/4D3tUzZerDj7rniG6" target="_blank">Google Map location here</a>.
-  </p>
+<h1>🎉 Office Outing Dashboard</h1>
+<p>
+  Hey everyone! We’ll be visiting <b>Nature Trails Resort</b>. 
+  <a href="https://www.naturetrails.in/" target="_blank">Website</a> | 
+  <a href="https://maps.app.goo.gl/4D3tUzZerDj7rniG6" target="_blank">Map</a>
+</p>
 
-  <h2>Create Carpool Group</h2>
-  <form id="groupForm">
-    <label>Group Name (Owner):</label>
-    <input type="text" id="groupName" required>
-    <label>Trigram:</label>
-    <input type="text" id="groupTrigram" required>
-    <label>Phone Number:</label>
-    <input type="text" id="groupPhone" required>
-    <label>Route From:</label>
-    <input type="text" id="routeFrom" required>
-    <label>Route To:</label>
-    <input type="text" id="routeTo" required>
-    <label>Total Seats in your car:</label>
-    <input type="number" id="seats" required>
-    <label>Return Type:</label>
-    <select id="groupReturnType">
-      <option value="Same Day">Same Day</option>
-      <option value="Overnight">Overnight</option>
-    </select>
-    <button type="submit">Create Group</button>
-  </form>
+<h2>Create Carpool Group</h2>
+<form id="groupForm">
+  <label>Group Name (Owner):</label>
+  <input type="text" id="groupName" required>
+  <label>Trigram:</label>
+  <input type="text" id="groupTrigram" required>
+  <label>Phone Number:</label>
+  <input type="text" id="groupPhone" required>
+  <label>Route From:</label>
+  <input type="text" id="routeFrom" required>
+  <label>Route To:</label>
+  <input type="text" id="routeTo" required>
+  <label>Total Seats:</label>
+  <input type="number" id="seats" required>
+  <label>Return Type:</label>
+  <select id="groupReturnType">
+    <option value="Same Day">Same Day</option>
+    <option value="Overnight">Overnight</option>
+  </select>
+  <button type="submit">Create Group</button>
+</form>
 
-  <h2>Available Carpool Groups</h2>
-  <table id="groupsTable">
-    <thead>
-      <tr>
-        <th>Owner</th>
-        <th>Trigram</th>
-        <th>Phone</th>
-        <th>Route</th>
-        <th>Total Seats</th>
-        <th>Remaining Seats</th>
-        <th>Return Type</th>
-        <th>Members</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+<h2>Available Carpool Groups</h2>
+<table id="groupsTable">
+  <thead>
+    <tr>
+      <th>Owner</th>
+      <th>Trigram</th>
+      <th>Phone</th>
+      <th>Route</th>
+      <th>Total Seats</th>
+      <th>Remaining Seats</th>
+      <th>Return Type</th>
+      <th>Members</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
-  <h2>Request to Join a Group</h2>
-  <form id="requestForm">
-    <label>Your Name:</label>
-    <input type="text" id="requestName" required>
-    <label>Group Name (Mention the group from the above list you wish to join for carpool):</label>
-    <input type="text" id="requestGroup" required>
-    <b>Kindly connect with the group owner on their mobile number or on their trigram through platform conversations before joining their group</b>
-    <button type="submit">Request to Join</button>
-  </form>
+<h2>Request to Join a Group</h2>
+<form id="requestForm">
+  <label>Your Name:</label>
+  <input type="text" id="requestName" required>
+  <label>Group Name (Owner):</label>
+  <input type="text" id="requestGroup" required>
+  <b>Connect with the group owner before joining.</b>
+  <button type="submit">Request to Join</button>
+</form>
 
-  <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbz-QZdj5xVkAe3dsH6JT2YMmFy8ChTbjclmPBdfTcGKrdyzYEeVuEm6rQ9rJTJaHVn3oA/exec";
+<script>
+const webAppUrl = "https://script.google.com/macros/s/AKfycbxhJYrjOYTTIQA2PyFoRlFkoSYFu5n6JrZY36qQAYAwfmAa8OW6L3KcqiwaGenXn3_GAA/exec";
 
-    async function fetchGroups() {
-      const res = await fetch(API_URL);
-      const data = await res.json();
-      updateGroupsTable(data);
-    }
+let groups = [];
 
-    document.getElementById('groupForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const formData = {
-        "Group Name (Owner)": document.getElementById('groupName').value,
-        "Trigram": document.getElementById('groupTrigram').value,
-        "Phone Number": document.getElementById('groupPhone').value,
-        "Route From": document.getElementById('routeFrom').value,
-        "Route To": document.getElementById('routeTo').value,
-        "Route": `${document.getElementById('routeFrom').value} → ${document.getElementById('routeTo').value}`,
-        "Total Seats": parseInt(document.getElementById('seats').value),
-        "Remaining Seats": parseInt(document.getElementById('seats').value),
-        "Return Type": document.getElementById('groupReturnType').value,
-        "Members": document.getElementById('groupName').value
-      };
-
-      await fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify(formData),
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      this.reset();
-      fetchGroups();
+// Fetch existing groups from Google Sheet
+function fetchGroups() {
+  fetch(webAppUrl)
+    .then(res => res.json())
+    .then(data => {
+      groups = data;
+      updateGroupsTable();
     });
+}
 
-    function updateGroupsTable(groups) {
-      const tbody = document.querySelector('#groupsTable tbody');
-      tbody.innerHTML = '';
-      groups.forEach(group => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${group["Group Name (Owner)"]}</td>
-          <td>${group["Trigram"]}</td>
-          <td>${group["Phone Number"]}</td>
-          <td>${group["Route"]}</td>
-          <td>${group["Total Seats"]}</td>
-          <td>${group["Remaining Seats"]}</td>
-          <td>${group["Return Type"]}</td>
-          <td>${group["Members"]}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
+// Update table
+function updateGroupsTable() {
+  const tbody = document.querySelector("#groupsTable tbody");
+  tbody.innerHTML = "";
+  groups.forEach(group => {
+    const remainingSeats = group["Remaining Seats"];
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${group["Group Name (Owner)"]}</td>
+      <td>${group["Trigram"]}</td>
+      <td>${group["Phone Number"]}</td>
+      <td>${group["Route"]}</td>
+      <td>${group["Total Seats"]}</td>
+      <td>${remainingSeats}</td>
+      <td>${group["Return Type"]}</td>
+      <td>${group["Members"]}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
 
-    // Load groups when the page loads
+// Create new group
+document.getElementById("groupForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const data = {
+    action: "createGroup",
+    "Group Name (Owner)": document.getElementById("groupName").value,
+    "Trigram": document.getElementById("groupTrigram").value,
+    "Phone Number": document.getElementById("groupPhone").value,
+    "Route From": document.getElementById("routeFrom").value,
+    "Route To": document.getElementById("routeTo").value,
+    "Total Seats": parseInt(document.getElementById("seats").value),
+    "Return Type": document.getElementById("groupReturnType").value
+  };
+  
+  fetch(webAppUrl, {
+    method: "POST",
+    body: JSON.stringify(data)
+  }).then(() => {
     fetchGroups();
-  </script>
+    this.reset();
+  });
+});
+
+// Join existing group
+document.getElementById("requestForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const data = {
+    action: "joinGroup",
+    groupOwner: document.getElementById("requestGroup").value,
+    memberName: document.getElementById("requestName").value
+  };
+  
+  fetch(webAppUrl, {
+    method: "POST",
+    body: JSON.stringify(data)
+  }).then(() => {
+    fetchGroups();
+    this.reset();
+  });
+});
+
+// Initial load
+fetchGroups();
+</script>
 
 </body>
 </html>
