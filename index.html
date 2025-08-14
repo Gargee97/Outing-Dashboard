@@ -1,195 +1,124 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <title>Office Outing Dashboard</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h1 { margin-bottom: 6px; }
-    p.desc { color: #333; margin-top: 0; }
-    form { margin-bottom: 20px; border: 1px solid #ddd; padding: 12px; border-radius: 6px; max-width: 720px; }
-    label { display: block; margin-top: 10px; font-weight: 600; }
-    input, select, textarea, button { padding: 8px; margin-top: 6px; width: 100%; box-sizing: border-box; }
-    table { width: 100%; max-width: 1100px; border-collapse: collapse; margin-top: 12px; }
-    th, td { border: 1px solid #eee; padding: 8px; text-align: left; }
-    th { background: #f7f7f7; }
-    .muted { color: #666; font-size: 0.95em; margin-top: 6px; }
-    .note { font-weight: 700; margin-top: 8px; }
-  </style>
+<title>Office Outing Dashboard</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; }
+input, select, button { margin: 5px; padding: 5px; }
+</style>
 </head>
 <body>
 
-  <h1>🎉 Office Outing Dashboard</h1>
-  <p class="desc">
-    Hey everyone! We’ll be visiting <b>Nature Trails Resort</b> for our office outing. 
-    You can check out more details on their <a href="https://www.naturetrails.in/" target="_blank">website</a> or view the 
-    <a href="https://maps.app.goo.gl/4D3tUzZerDj7rniG6" target="_blank">Google Map location here</a>.
-  </p>
+<h1>Office Outing Dashboard</h1>
+<p>Hey everyone, we’ll be visiting <strong>Nature Trails Resort</strong>. 
+Check out their <a href="https://www.naturetrails.in/" target="_blank">website</a> 
+and <a href="https://maps.app.goo.gl/4D3tUzZerDj7rniG6" target="_blank">Google Map location</a>.</p>
 
-  <h2>Create Car Pool Group</h2>
-  <form id="groupForm">
-    <label>Group Name (Car Owner's Name):</label>
-    <input id="group_owner" required placeholder="e.g., John's Car">
-    <label>Trigram:</label>
-    <input id="group_trigram" required placeholder="e.g., JDN">
-    <label>Phone Number:</label>
-    <input id="group_phone" required placeholder="Owner mobile number">
-    <label>Route From:</label>
-    <input id="route_from" required>
-    <label>Route To:</label>
-    <input id="route_to" required>
-    <label>Total Seats in Car (Including Driver's Seat):</label>
-    <input id="total_seats" type="number" min="1" value="1" required>
-    <label>Return Type:</label>
-    <select id="group_return">
-      <option>Same Day</option>
-      <option>Overnight</option>
-    </select>
-    <div style="margin-top:10px">
-      <button type="submit">Create Group</button>
-    </div>
-  </form>
+<h2>Create Carpool Group (For Car Owners)</h2>
+<input type="text" id="ownerName" placeholder="Car Owner's Name">
+<input type="text" id="from" placeholder="From">
+<input type="text" id="to" placeholder="To">
+<input type="text" id="trigram" placeholder="Trigram">
+<input type="text" id="phone" placeholder="Phone Number">
+<input type="number" id="seatsAvailable" placeholder="Seats Available">
+<button onclick="createGroup()">Create Car Pool Group</button>
 
-  <h2>Available Carpool Groups</h2>
-  <table id="groupsTable">
-    <thead>
-      <tr>
-        <th>Group Name (Car Owner's Name)</th>
-        <th>Trigram</th>
-        <th>Phone</th>
-        <th>Route</th>
-        <th>Total Seats</th>
-        <th>Remaining Seats</th>
-        <th>Return Type</th>
-        <th>Members</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+<h2>Request to Join a Car Pool Group</h2>
+<input type="text" id="requestorName" placeholder="Your Name">
+<input type="text" id="reqTrigram" placeholder="Your Trigram">
+<input type="text" id="reqPhone" placeholder="Your Phone Number">
+<input type="text" id="targetGroup" placeholder="Car Owner's Name to Join">
+<p><b>Kindly connect with the group owner on their mobile number or on their trigram through platform conversations before joining their group</b></p>
+<button onclick="joinGroup()">Request to Join</button>
 
-  <h2>Request to Join a Car Pool Group</h2>
-  <form id="joinForm">
-    <label>Your Name:</label>
-    <input id="join_name" required>
-    <label>Group Name (Mention the Car Owner's name from the above list you wish to join for carpool):</label>
-    <input id="join_group" required placeholder="Type exact group name (Car Owner's Name)">
-    <label>Message (optional):</label>
-    <textarea id="join_msg" rows="2" placeholder="Any message to the owner"></textarea>
-    <div class="note">Kindly connect with the group owner on their mobile number or on their trigram through platform conversations before joining their group</div>
-    <div style="margin-top:10px"><button type="submit">Request to Join</button></div>
-  </form>
+<h2>Available Carpool Groups</h2>
+<table border="1" id="groupTable">
+<thead>
+<tr>
+<th>Car Owner's Name</th><th>From</th><th>To</th><th>Trigram</th><th>Phone</th><th>Seats Available</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
 
-  <script>
-    // REPLACE with your Apps Script web app URL
-    const API_ROOT = "https://script.google.com/macros/s/AKfycbzkH_nmSwCt2LtMKlfgCmOxQeST8Lc7N4RKOH9lAQMazrZaknkGky-T49PZVWb4MGD3/exec"; // e.g. https://script.google.com/macros/s/AKf.../exec
+<script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzkH_nmSwCt2LtMKlfgCmOxQeST8Lc7N4RKOH9lAQMazrZaknkGky-T49PZVWb4MGD3/exec";
 
-    // helper: fetch groups and populate table
-    async function loadGroups() {
-      try {
-        const res = await fetch(API_ROOT + "?action=getGroups");
-        const data = await res.json(); // data is array of rows including header
-        // data[0] is header row from sheet
-        const rows = data.slice(1); // actual data
-        const tbody = document.querySelector("#groupsTable tbody");
-        tbody.innerHTML = "";
-        rows.forEach(r => {
-          // r indices (based on CarPoolGroups headers):
-          // 0: GroupName,1:Trigram,2:Phone,3:From,4:To,5:TotalSeats,6:RemainingSeats,7:ReturnType,8:Members
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${escapeHtml(r[0]||"")}</td>
-            <td>${escapeHtml(r[1]||"")}</td>
-            <td>${escapeHtml(r[2]||"")}</td>
-            <td>${escapeHtml((r[3]||"") + " → " + (r[4]||""))}</td>
-            <td>${r[5]||""}</td>
-            <td>${r[6]||""}</td>
-            <td>${escapeHtml(r[7]||"")}</td>
-            <td>${escapeHtml(r[8]||"")}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      } catch (err) {
-        console.error(err);
-        alert("Failed to load groups. Check console for details.");
-      }
+function createGroup() {
+  const payload = {
+    action: "createGroup",
+    ownerName: document.getElementById("ownerName").value,
+    from: document.getElementById("from").value,
+    to: document.getElementById("to").value,
+    trigram: document.getElementById("trigram").value,
+    phone: document.getElementById("phone").value,
+    seatsAvailable: document.getElementById("seatsAvailable").value
+  };
+
+  fetch(WEB_APP_URL, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === "success") {
+      alert("Group created successfully!");
+      loadGroups();
+    } else {
+      alert("Error: " + data.message);
     }
+  });
+}
 
-    // utility to escape HTML
-    function escapeHtml(s) {
-      if (!s) return "";
-      return String(s).replace(/[&<>"']/g, function(m) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];});
+function joinGroup() {
+  const payload = {
+    action: "joinGroup",
+    requestorName: document.getElementById("requestorName").value,
+    trigram: document.getElementById("reqTrigram").value,
+    phone: document.getElementById("reqPhone").value,
+    targetGroup: document.getElementById("targetGroup").value
+  };
+
+  fetch(WEB_APP_URL, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === "success") {
+      alert("Join request sent!");
+    } else {
+      alert("Error: " + data.message);
     }
+  });
+}
 
-    // create group submit
-    document.getElementById("groupForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-      const payload = {
-        type: "group",
-        ownerName: document.getElementById("group_owner").value.trim(),
-        trigram: document.getElementById("group_trigram").value.trim(),
-        phone: document.getElementById("group_phone").value.trim(),
-        from: document.getElementById("route_from").value.trim(),
-        to: document.getElementById("route_to").value.trim(),
-        totalSeats: Number(document.getElementById("total_seats").value),
-        returnType: document.getElementById("group_return").value
-      };
-      try {
-        const res = await fetch(API_ROOT, {
-          method: "POST",
-          body: JSON.stringify(payload),
-          headers: { "Content-Type": "application/json" }
+function loadGroups() {
+  const payload = { action: "getGroups" };
+  fetch(WEB_APP_URL, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === "success") {
+      const tbody = document.querySelector("#groupTable tbody");
+      tbody.innerHTML = "";
+      data.data.slice(1).forEach(row => {
+        let tr = document.createElement("tr");
+        row.forEach(cell => {
+          let td = document.createElement("td");
+          td.textContent = cell;
+          tr.appendChild(td);
         });
-        const data = await res.json();
-        if (data.status === "ok") {
-          alert("Group created.");
-          this.reset();
-          loadGroups();
-        } else {
-          alert("Error: " + (data.message||JSON.stringify(data)));
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Create failed. See console.");
-      }
-    });
+        tbody.appendChild(tr);
+      });
+    }
+  });
+}
 
-    // join group submit
-    document.getElementById("joinForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-      const payload = {
-        type: "join",
-        requestName: document.getElementById("join_name").value.trim(),
-        targetGroup: document.getElementById("join_group").value.trim(),
-        message: document.getElementById("join_msg").value.trim()
-      };
-      try {
-        const res = await fetch(API_ROOT, {
-          method: "POST",
-          body: JSON.stringify(payload),
-          headers: { "Content-Type": "application/json" }
-        });
-        const data = await res.json();
-        if (data.status === "ok") {
-          alert("You were added to the group (if seats available).");
-          this.reset();
-          loadGroups();
-        } else {
-          alert("Error: " + (data.message||JSON.stringify(data)));
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Request failed. See console.");
-      }
-    });
-
-    // initial load
-    loadGroups();
-
-    // optionally poll every 20s for updates
-    setInterval(loadGroups, 20000);
-  </script>
+loadGroups();
+</script>
 
 </body>
 </html>
-
-
