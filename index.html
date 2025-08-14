@@ -17,84 +17,74 @@
 </head>
 <body>
 
-<h1>🎉 Office Outing Dashboard</h1>
-<p>
-  Hey everyone! We’ll be visiting <b>Nature Trails Resort</b>. 
-  <a href="https://www.naturetrails.in/" target="_blank">Website</a> | 
-  <a href="https://maps.app.goo.gl/4D3tUzZerDj7rniG6" target="_blank">Map</a>
-</p>
+  <h1>🎉 Office Outing Dashboard</h1>
+  <p>
+    Hey everyone! We’ll be visiting <b>Nature Trails Resort</b> for our office outing. 
+    You can check out more details on their 
+    <a href="https://www.naturetrails.in/" target="_blank">website</a> or view the 
+    <a href="https://maps.app.goo.gl/4D3tUzZerDj7rniG6" target="_blank">Google Map location here</a>.
+  </p>
 
-<h2>Create Carpool Group</h2>
-<form id="groupForm">
-  <label>Group Name (Owner):</label>
-  <input type="text" id="groupName" required>
-  <label>Trigram:</label>
-  <input type="text" id="groupTrigram" required>
-  <label>Phone Number:</label>
-  <input type="text" id="groupPhone" required>
-  <label>Route From:</label>
-  <input type="text" id="routeFrom" required>
-  <label>Route To:</label>
-  <input type="text" id="routeTo" required>
-  <label>Total Seats:</label>
-  <input type="number" id="seats" required>
-  <label>Return Type:</label>
-  <select id="groupReturnType">
-    <option value="Same Day">Same Day</option>
-    <option value="Overnight">Overnight</option>
-  </select>
-  <button type="submit">Create Group</button>
-</form>
+  <h2>Create Carpool Group</h2>
+  <form id="groupForm">
+    <label>Group Name (Owner):</label>
+    <input type="text" id="groupName" required>
+    <label>Trigram:</label>
+    <input type="text" id="groupTrigram" required>
+    <label>Phone Number:</label>
+    <input type="text" id="groupPhone" required>
+    <label>Route From:</label>
+    <input type="text" id="routeFrom" required>
+    <label>Route To:</label>
+    <input type="text" id="routeTo" required>
+    <label>Total Seats in your car:</label>
+    <input type="number" id="seats" required>
+    <label>Return Type:</label>
+    <select id="groupReturnType">
+      <option value="Same Day">Same Day</option>
+      <option value="Overnight">Overnight</option>
+    </select>
+    <button type="submit">Create Group</button>
+  </form>
 
-<h2>Available Carpool Groups</h2>
-<table id="groupsTable">
-  <thead>
-    <tr>
-      <th>Owner</th>
-      <th>Trigram</th>
-      <th>Phone</th>
-      <th>Route</th>
-      <th>Total Seats</th>
-      <th>Remaining Seats</th>
-      <th>Return Type</th>
-      <th>Members</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+  <h2>Available Carpool Groups</h2>
+  <table id="groupsTable">
+    <thead>
+      <tr>
+        <th>Owner</th>
+        <th>Trigram</th>
+        <th>Phone</th>
+        <th>Route</th>
+        <th>Total Seats</th>
+        <th>Remaining Seats</th>
+        <th>Return Type</th>
+        <th>Members</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-<h2>Request to Join a Group</h2>
-<form id="requestForm">
-  <label>Your Name:</label>
-  <input type="text" id="requestName" required>
-  <label>Group Name (Owner):</label>
-  <input type="text" id="requestGroup" required>
-  <b>Connect with the group owner before joining.</b>
-  <button type="submit">Request to Join</button>
-</form>
+  <h2>Request to Join a Group</h2>
+  <form id="requestForm">
+    <label>Your Name:</label>
+    <input type="text" id="requestName" required>
+    <label>Group Name (Owner from the above list):</label>
+    <input type="text" id="requestGroup" required>
+    <b>Kindly connect with the group owner on their mobile number or trigram before joining their group</b>
+    <button type="submit">Request to Join</button>
+  </form>
 
 <script>
-const webAppUrl = "https://script.google.com/macros/s/AKfycbxhJYrjOYTTIQA2PyFoRlFkoSYFu5n6JrZY36qQAYAwfmAa8OW6L3KcqiwaGenXn3_GAA/exec";
+const webAppUrl = "YOUR_DEPLOYED_WEB_APP_URL_HERE"; // Replace with your deployed Web App URL
 
-let groups = [];
-
-// Fetch existing groups from Google Sheet
-function fetchGroups() {
-  fetch(webAppUrl)
-    .then(res => res.json())
-    .then(data => {
-      groups = data;
-      updateGroupsTable();
-    });
-}
-
-// Update table
-function updateGroupsTable() {
-  const tbody = document.querySelector("#groupsTable tbody");
-  tbody.innerHTML = "";
-  groups.forEach(group => {
+async function fetchGroups() {
+  const res = await fetch(webAppUrl);
+  const data = await res.json();
+  const tbody = document.querySelector('#groupsTable tbody');
+  tbody.innerHTML = '';
+  data.forEach(group => {
     const remainingSeats = group["Remaining Seats"];
-    const tr = document.createElement("tr");
+    const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${group["Group Name (Owner)"]}</td>
       <td>${group["Trigram"]}</td>
@@ -109,48 +99,53 @@ function updateGroupsTable() {
   });
 }
 
-// Create new group
-document.getElementById("groupForm").addEventListener("submit", function(e) {
+document.getElementById('groupForm').addEventListener('submit', async function(e){
   e.preventDefault();
-  const data = {
-    action: "createGroup",
-    "Group Name (Owner)": document.getElementById("groupName").value,
-    "Trigram": document.getElementById("groupTrigram").value,
-    "Phone Number": document.getElementById("groupPhone").value,
-    "Route From": document.getElementById("routeFrom").value,
-    "Route To": document.getElementById("routeTo").value,
-    "Total Seats": parseInt(document.getElementById("seats").value),
-    "Return Type": document.getElementById("groupReturnType").value
-  };
-  
-  fetch(webAppUrl, {
+  const owner = document.getElementById('groupName').value;
+  const trigram = document.getElementById('groupTrigram').value;
+  const phone = document.getElementById('groupPhone').value;
+  const routeFrom = document.getElementById('routeFrom').value;
+  const routeTo = document.getElementById('routeTo').value;
+  const seats = parseInt(document.getElementById('seats').value);
+  const returnType = document.getElementById('groupReturnType').value;
+
+  await fetch(webAppUrl, {
     method: "POST",
-    body: JSON.stringify(data)
-  }).then(() => {
-    fetchGroups();
-    this.reset();
+    body: JSON.stringify({
+      type: "create",
+      owner,
+      trigram,
+      phone,
+      routeFrom,
+      routeTo,
+      seats,
+      returnType
+    })
   });
+
+  this.reset();
+  fetchGroups();
 });
 
-// Join existing group
-document.getElementById("requestForm").addEventListener("submit", function(e) {
+document.getElementById('requestForm').addEventListener('submit', async function(e){
   e.preventDefault();
-  const data = {
-    action: "joinGroup",
-    groupOwner: document.getElementById("requestGroup").value,
-    memberName: document.getElementById("requestName").value
-  };
-  
-  fetch(webAppUrl, {
+  const name = document.getElementById('requestName').value;
+  const groupOwner = document.getElementById('requestGroup').value;
+
+  const res = await fetch(webAppUrl, {
     method: "POST",
-    body: JSON.stringify(data)
-  }).then(() => {
-    fetchGroups();
-    this.reset();
+    body: JSON.stringify({type: "join", name, groupOwner})
   });
+
+  const result = await res.json();
+  if(result.status === "full") alert("No seats available in this group!");
+  else alert(`${name} successfully joined ${groupOwner}'s group!`);
+
+  this.reset();
+  fetchGroups();
 });
 
-// Initial load
+// Fetch groups on page load
 fetchGroups();
 </script>
 
